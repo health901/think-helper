@@ -11,6 +11,7 @@
 namespace think\helper;
 
 use ReflectionClass;
+use think\Container;
 use think\exception\EventException;
 use think\facade\Event;
 use think\helper\Str;
@@ -62,11 +63,12 @@ trait EventObserverable
     /**
      * 触发事件.
      *
-     * @param string $event 事件名
+     * @param string $event  事件名
+     * @param mixed  $params 参数
      *
      * @return bool
      */
-    protected function trigger(string $event): bool
+    protected function trigger(string $event, $params = null): bool
     {
         if (!$this->withEvent) {
             return true;
@@ -83,9 +85,9 @@ trait EventObserverable
             }
 
             if (method_exists($observer, $call)) {
-                $result = call_user_func([$observer, $call], $this);
+                $result = Container::getInstance()->invoke([$observer, $call], [$params ?: $this]);
             } else {
-                $result = Event::trigger($event, $this);
+                $result = Event::trigger($event, $params ?: $this);
                 $result = empty($result) ? true : end($result);
             }
 
